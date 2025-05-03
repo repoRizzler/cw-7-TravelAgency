@@ -26,7 +26,6 @@ public class ClientService : IClientService
             {
                 await connection.OpenAsync();
 
-                // Check if client with the same PESEL already exists
                 string checkSql = "SELECT COUNT(*) FROM Client WHERE Pesel = @Pesel";
                 using (var command = new SqlCommand(checkSql, connection))
                 {
@@ -63,12 +62,10 @@ public class ClientService : IClientService
             {
                 await connection.OpenAsync();
 
-                // Start transaction to ensure all operations complete or none do
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        // Check if client exists
                         string checkClientSql = "SELECT 1 FROM Client WHERE IdClient = @ClientId";
                         using (var command = new SqlCommand(checkClientSql, connection, transaction))
                         {
@@ -80,7 +77,6 @@ public class ClientService : IClientService
                             }
                         }
 
-                        // Check if trip exists
                         string checkTripSql = "SELECT MaxPeople FROM Trip WHERE IdTrip = @TripId";
                         int maxPeople;
                         using (var command = new SqlCommand(checkTripSql, connection, transaction))
@@ -94,7 +90,6 @@ public class ClientService : IClientService
                             maxPeople = Convert.ToInt32(tripResult);
                         }
 
-                        // Check if client is already registered for this trip
                         string checkRegistrationSql = "SELECT 1 FROM Client_Trip WHERE IdClient = @ClientId AND IdTrip = @TripId";
                         using (var command = new SqlCommand(checkRegistrationSql, connection, transaction))
                         {
@@ -107,7 +102,6 @@ public class ClientService : IClientService
                             }
                         }
 
-                        // Check if trip has reached max participants
                         string currentParticipantsSql = "SELECT COUNT(*) FROM Client_Trip WHERE IdTrip = @TripId";
                         using (var command = new SqlCommand(currentParticipantsSql, connection, transaction))
                         {
@@ -119,7 +113,6 @@ public class ClientService : IClientService
                             }
                         }
 
-                        // Register client for the trip
                         var registeredAt = DateTime.Now;
                         string registerSql = @"
                             INSERT INTO Client_Trip (IdClient, IdTrip, RegisteredAt)
@@ -159,7 +152,6 @@ public class ClientService : IClientService
             {
                 await connection.OpenAsync();
 
-                // Check if registration exists
                 string checkSql = "SELECT 1 FROM Client_Trip WHERE IdClient = @ClientId AND IdTrip = @TripId";
                 using (var command = new SqlCommand(checkSql, connection))
                 {
@@ -172,7 +164,6 @@ public class ClientService : IClientService
                     }
                 }
 
-                // Delete registration
                 string deleteSql = "DELETE FROM Client_Trip WHERE IdClient = @ClientId AND IdTrip = @TripId";
                 using (var command = new SqlCommand(deleteSql, connection))
                 {

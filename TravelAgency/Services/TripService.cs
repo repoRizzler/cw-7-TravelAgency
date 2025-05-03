@@ -28,7 +28,6 @@ public interface ITripService
             {
                 await connection.OpenAsync();
 
-                // Get trips
                 string tripSql = @"
                     SELECT t.IdTrip, t.Name, t.Description, t.DateFrom, t.DateTo, t.MaxPeople
                     FROM Trip t
@@ -44,7 +43,6 @@ public interface ITripService
                             Id = reader.GetInt32(0),
                             Name = reader.GetString(1),
                             Description = reader.GetString(2),
-                            // Safely convert to DateTime to avoid type cast errors
                             DateFrom = Convert.ToDateTime(reader.GetValue(3)),
                             DateTo = Convert.ToDateTime(reader.GetValue(4)),
                             MaxPeople = reader.GetInt32(5),
@@ -54,8 +52,7 @@ public interface ITripService
                         tripCountriesDict[trip.Id] = trip.Countries;
                     }
                 }
-
-                // Get countries for each trip
+                
                 if (trips.Any())
                 {
                     string countrySql = @"
@@ -92,8 +89,7 @@ public interface ITripService
             using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-
-                // First check if client exists
+                
                 string clientSql = "SELECT 1 FROM Client WHERE IdClient = @ClientId";
                 using (var command = new SqlCommand(clientSql, connection))
                 {
@@ -101,12 +97,10 @@ public interface ITripService
                     var result = await command.ExecuteScalarAsync();
                     if (result == null)
                     {
-                        // Client doesn't exist
                         return new List<ClientTripDTO>();
                     }
                 }
-
-                // Get client trips
+                
                 string tripSql = @"
                     SELECT t.IdTrip, t.Name, t.Description, t.DateFrom, t.DateTo, ct.RegisteredAt, ct.PaymentDate
                     FROM Client_Trip ct
@@ -127,7 +121,6 @@ public interface ITripService
                                 TripId = reader.GetInt32(0),
                                 TripName = reader.GetString(1),
                                 Description = reader.GetString(2),
-                                // Safely convert to DateTime to avoid type cast errors
                                 DateFrom = Convert.ToDateTime(reader.GetValue(3)),
                                 DateTo = Convert.ToDateTime(reader.GetValue(4)),
                                 RegisteredAt = reader.GetInt32(5),
@@ -140,8 +133,7 @@ public interface ITripService
                         }
                     }
                 }
-
-                // Get countries for each trip
+                
                 if (clientTrips.Any())
                 {
                     string countrySql = @"
